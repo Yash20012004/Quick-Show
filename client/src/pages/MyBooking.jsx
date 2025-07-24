@@ -5,18 +5,31 @@ import BlurCircle from '../components/BlurCircle'
 import timeFormat from '../lib/timeFormat'
 import isoTimeFormat from '../lib/isoTimeFormat'
 import { dateFormat } from '../lib/dateFormat'
+import { useAppContext } from '../context/AppContext'
 
 const MyBooking = () => {
   const currency=import.meta.env.VITE_CURRENCY
+
+  const {shows,axios,getToken,user,image_base_url}=useAppContext()
+
   const [bookings,setBookings]=useState([])
   const[isLoading,setIsLoading]=useState(true)
   const getMyBookings=async ()=>{
-    setBookings(dummyBookingData)
-    setIsLoading(false)
+   try {
+    const {data}= await axios.get('/api/user/bookings',{headers:{Authorization:`Bearer ${await getToken()}`}})
+    if(data.success){
+      setBookings(data.bookings)
+    }
+   } catch (error) {
+     console.log(error)
+   }
+   setIsLoading(false)
   }
   useEffect(()=>{
-    getMyBookings()
-  },[])
+    if(user){
+      getMyBookings()
+    }
+  },[user])
   return !isLoading?(
     <div className='relative px-6 md:px-16 lg:px-40 pt-30 md:pt-40 min-h-[80vh]'>
       <BlurCircle top='100px' left='100px' />
@@ -29,7 +42,7 @@ const MyBooking = () => {
         border border-primary/20 rounded-lg mt-4 p-2 max-w-2xl'>
           <div className='flex flex-col md:flex-row'>
             <img
-                 src={item.show.movie.poster_path}
+                 src={image_base_url+item.show.movie.poster_path}
                  alt=""
                  className="max-w-[180px] aspect-video h-auto object-cover object-bottom rounded"
             />  
