@@ -3,6 +3,7 @@ import Movie from "../models/Movie.js";
 import Show from "../models/Show.js";
 //API to get now playing movies from TMDI API
 import axiosInstance from '../configs/axiosConfig.js'; // adjust the path if needed
+import { inngest } from "../inngest/index.js";
 export const getNowPlayingMovies = async (req, res) => {
   try {
     const { data } = await axiosInstance.get(
@@ -88,6 +89,12 @@ export const addShow = async (req, res) => {
     if (showsToCreate.length > 0) {
       await Show.insertMany(showsToCreate);
     }
+
+    // Trigger inngest event
+    await inngest.send({
+      name:"app/show-added",
+      data:{movieTitle:movie.title}
+    })
 
     res.json({ success: true, message: "Show(s) added successfully" });
   } catch (error) {
