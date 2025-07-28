@@ -77,7 +77,14 @@ export const createBooking= async (req,res)=>{
        })
        booking.paymentLink=session.url;
        await booking.save();
+      // run inngest payment schduler function to check status after 10 min
 
+        await inngest.send({
+            name:"app/checkpayment",
+            data:{
+                bookingId:booking._id.toString()
+            }
+        })
         return res.json({success:true,url:session.url}); 
 
     } catch (error) {
